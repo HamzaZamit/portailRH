@@ -1,0 +1,52 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+version: '3'
+#Define services
+services:
+  #PostgreSQL Database for the application
+  portail-postgres-container:
+    image: "postgres:alpine"
+    container_name: portail-postgres-container
+    volumes:
+      - portail-data:/var/lib/postgresql/data
+    #Volume mounted for database for the storage
+    ports:
+      - 2332:5432 # Forward the exposed port 5432 on the container to port 5432 on the host machine
+    #Environment variable for DB name, user and password
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mysecretpassword
+  #Back-end Spring Boot Application
+  portail-spring-container:
+    #The docker file in scrum-app build the jar and provides the docker image with the following name.
+    build:
+      context: back-end/
+      dockerfile: Dockerfile
+    #Environment variables for Spring Boot Application.
+    environment:
+      - DB_SERVER=portail-postgres-container
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=mysecretpassword
+    ports:
+      - 8091:8080  # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    #Fron-end Angular Application
+    volumes:
+      - ./dockerisation:/directory/documents
+  portail-angular-container:
+    #The docker file in scrum-app build the jar and provides the docker image with the following name.
+    build:
+      context: front-end/
+      dockerfile: Dockerfile
+    ports:
+      - 8080:80  # Forward the exposed port 8080 on the container to port 8080 on the host machine
+    volumes:
+      - ./dockerisation:/usr/share/nginx/html/directory/documents
+
+
+
+
+#Volumes for DB data
+volumes:
+  portail-data:
+  depe:
